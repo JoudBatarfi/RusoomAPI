@@ -9,6 +9,7 @@ namespace Rusoom.Controllers
 
     public class PrivacyPolicyController : ControllerBase
     {
+
        
     }
 }
