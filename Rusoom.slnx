@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Rusoom.Tests/Rusoom.Tests.csproj" />
+  <Project Path="Rusoom/Rusoom.csproj" />
+</Solution>
