@@ -25,7 +25,17 @@ namespace Rusoom.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasDefaultSchema("identity");
 
-            modelBuilder.Entity<Child>().ToTable("Child", "children");
+            // Child
+            modelBuilder.Entity<Child>().ToTable(
+                "Child",
+                "children",
+                table => table.HasCheckConstraint(
+                    "CK_Child_BirthMonth",
+                    "[BirthMonth] BETWEEN 1 AND 12"
+                    )
+                );
+
+            // ChildAccess
             modelBuilder.Entity<ChildAccess>().ToTable(
                 "ChildAccess", 
                 "children",
@@ -41,7 +51,6 @@ namespace Rusoom.Infrastructure.Data
                 }
                 );
                 
-
 
             // ChildAccess
             modelBuilder.Entity<ChildAccess>()
@@ -74,8 +83,18 @@ namespace Rusoom.Infrastructure.Data
                 .Property(childAccess => childAccess.DisplayLabel)
                 .HasMaxLength(50);
 
-          
-                
+
+            // Child
+            modelBuilder.Entity<Child>()
+                .HasOne<Parent>()
+                .WithMany()
+                .HasForeignKey(child => child.DeletedBy)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Child>()
+                .Property(child => child.DisplayName)
+                .HasMaxLength(50)
+
         }
     }
 
