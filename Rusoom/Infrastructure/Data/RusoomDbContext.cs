@@ -139,7 +139,22 @@ namespace Rusoom.Infrastructure.Data
                 .Property(privacyPolicy => privacyPolicy.ContentHash)
                 .HasMaxLength(64);
 
-            
+            // ParentPolicyAcceptance
+            modelBuilder.Entity<ParentPolicyAcceptance>()
+                .HasOne<Parent>()
+                .WithMany()
+                .HasForeignKey(parentPolicyAcceptance => parentPolicyAcceptance.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ParentPolicyAcceptance>()
+           .HasOne<PrivacyPolicy>()
+           .WithMany()
+           .HasForeignKey(parentPolicyAcceptance => parentPolicyAcceptance.PrivacyPolicyId)
+           .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ParentPolicyAcceptance>()
+           .HasIndex(parentPolicyAcceptance => new { parentPolicyAcceptance.ParentId, parentPolicyAcceptance.PrivacyPolicyId })
+           .IsUnique();
         }
     }
 
