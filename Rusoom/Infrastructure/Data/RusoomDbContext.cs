@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Rusoom.Entities.Identity;
 using Rusoom.Entities.Children;
+using Rusoom.Controllers;
 
 namespace Rusoom.Infrastructure.Data
 {
@@ -115,6 +116,30 @@ namespace Rusoom.Infrastructure.Data
             modelBuilder.Entity<Parent>()
                 .Property(parent => parent.Locale)
                 .HasMaxLength(64);
+
+            // PrivacyPolicy
+            modelBuilder.Entity<PrivacyPolicy>()
+                .HasIndex(privacyPolicy => privacyPolicy.Version)
+                .IsUnique();
+
+            modelBuilder.Entity<PrivacyPolicy>()
+                .HasIndex(privacyPolicy => privacyPolicy.IsCurrent)
+                .IsUnique()
+                .HasFilter("[IsCurrent] = 1");
+
+            modelBuilder.Entity<PrivacyPolicy>()
+                .Property(privacyPolicy => privacyPolicy.UrlEN)
+                .HasMaxLength(2048);
+
+            modelBuilder.Entity<PrivacyPolicy>()
+                .Property(privacyPolicy => privacyPolicy.UrlAR)
+                .HasMaxLength(2048);
+
+            modelBuilder.Entity<PrivacyPolicy>()
+                .Property(privacyPolicy => privacyPolicy.ContentHash)
+                .HasMaxLength(64);
+
+            
         }
     }
 
