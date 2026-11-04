@@ -93,8 +93,28 @@ namespace Rusoom.Infrastructure.Data
 
             modelBuilder.Entity<Child>()
                 .Property(child => child.DisplayName)
-                .HasMaxLength(50)
+                .HasMaxLength(50);
 
+            // Parent
+            modelBuilder.Entity<Parent>()
+                .HasIndex(parent => parent.NormalizedEmail)
+                .IsUnique();
+
+            modelBuilder.Entity<Parent>()
+                .Property(parent => parent.Name)
+                .HasMaxLength(50);
+
+            modelBuilder.Entity<Parent>()
+                .Property(parent => parent.CountryCode)
+                .HasMaxLength(2);
+
+            modelBuilder.Entity<Parent>()
+                .Property(parent => parent.Timezone)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<Parent>()
+                .Property(parent => parent.Locale)
+                .HasMaxLength(64);
         }
     }
 
