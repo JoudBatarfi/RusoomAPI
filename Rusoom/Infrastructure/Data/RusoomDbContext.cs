@@ -26,7 +26,56 @@ namespace Rusoom.Infrastructure.Data
             modelBuilder.HasDefaultSchema("identity");
 
             modelBuilder.Entity<Child>().ToTable("Child", "children");
-            modelBuilder.Entity<ChildAccess>().ToTable("ChildAccess", "children");
+            modelBuilder.Entity<ChildAccess>().ToTable(
+                "ChildAccess", 
+                "children",
+                table => {
+                    table.HasCheckConstraint(
+                        "CK_ChildAccess_Role",
+                        "[Role] IN (N'Owner', N'Collaborator')");
+
+
+                    table.HasCheckConstraint(
+                        "CK_ChildAccess_CollaboratorDisplayLabel",
+                        "[Role] = N'Owner' OR [DisplayLabel] IS NOT NULL");
+                }
+                );
+                
+
+
+            // ChildAccess
+            modelBuilder.Entity<ChildAccess>()
+                .HasOne<Child>()
+                .WithMany()
+                .HasForeignKey(childAccess => childAccess.ChildId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ChildAccess>()
+                .HasOne<Parent>()
+                .WithMany()
+                .HasForeignKey(childAccess => childAccess.ParentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ChildAccess>()
+                .HasIndex(childAccess => new {childAccess.ParentId, childAccess.ChildId})
+                .IsUnique();
+
+            modelBuilder.Entity<ChildAccess>()
+                .Property(childAccess => childAccess.Role)
+                .HasConversion<string>()
+                .HasMaxLength(12);
+
+            modelBuilder.Entity<ChildAccess>()
+                .HasIndex(childAccess => childAccess.ChildId)
+                .IsUnique()
+                .HasFilter("[Role] = N'Owner'");
+
+            modelBuilder.Entity<ChildAccess>()
+                .Property(childAccess => childAccess.DisplayLabel)
+                .HasMaxLength(50);
+
+          
+                
         }
     }
 
