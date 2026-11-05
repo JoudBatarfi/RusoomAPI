@@ -1,6 +1,7 @@
 using Rusoom.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Asp.Versioning;
+using Rusoom.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,7 +9,52 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<RusoomDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("RusoomDb")));
+builder.Services.AddDbContext<RusoomDbContext>(options => 
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("RusoomDb"));
+
+        // TODO: Re-enable policy seeding after Arabic and English policy pages are published.
+        /* options.UseSeeding((context, _ ) =>
+        {
+            var policyV1Exists = context.Set<PrivacyPolicy>().Any(policy => policy.Version == 1);
+
+            if(policyV1Exists)
+            {
+                return;
+            } else
+            {
+                var privacyPolicy = new PrivacyPolicy
+                {
+                    PrivacyPolicyId = Guid.NewGuid(),
+                    Version = 1,
+                    IsCurrent = true
+                };
+                context.Set<PrivacyPolicy>().Add(privacyPolicy);
+            }
+        }
+        );
+
+        options.UseAsyncSeeding(async (context, _, cancellationToken) =>
+        {
+            var policyV1Exists = await context.Set<PrivacyPolicy>().AnyAsync(policy => policy.Version == 1, cancellationToken);
+            if (policyV1Exists)
+            {
+                return;
+            }
+            else
+            {
+                var privacyPolicy = new PrivacyPolicy
+                {
+                    PrivacyPolicyId = Guid.NewGuid(),
+                    Version = 1,
+                    IsCurrent = true
+                };
+                context.Set<PrivacyPolicy>().Add(privacyPolicy);
+            }
+        }
+        );*/
+
+    });
 
 builder.Services.AddApiVersioning(options => 
 { options.ApiVersionReader = new UrlSegmentApiVersionReader(); 
