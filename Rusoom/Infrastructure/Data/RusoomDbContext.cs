@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Rusoom.Entities.Identity;
 using Rusoom.Entities.Children;
-using Rusoom.Controllers;
 
 namespace Rusoom.Infrastructure.Data
 {
@@ -26,16 +25,6 @@ namespace Rusoom.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasDefaultSchema("identity");
 
-            // Child
-            modelBuilder.Entity<Child>().ToTable(
-                "Child",
-                "children",
-                table => table.HasCheckConstraint(
-                    "CK_Child_BirthMonth",
-                    "[BirthMonth] BETWEEN 1 AND 12"
-                    )
-                );
-
             // ChildAccess
             modelBuilder.Entity<ChildAccess>().ToTable(
                 "ChildAccess", 
@@ -52,8 +41,6 @@ namespace Rusoom.Infrastructure.Data
                 }
                 );
                 
-
-            // ChildAccess
             modelBuilder.Entity<ChildAccess>()
                 .HasOne<Child>()
                 .WithMany()
@@ -86,6 +73,15 @@ namespace Rusoom.Infrastructure.Data
 
 
             // Child
+            modelBuilder.Entity<Child>().ToTable(
+               "Child",
+               "children",
+               table => table.HasCheckConstraint(
+                   "CK_Child_BirthMonth",
+                   "[BirthMonth] BETWEEN 1 AND 12"
+                   )
+               );
+
             modelBuilder.Entity<Child>()
                 .HasOne<Parent>()
                 .WithMany()
@@ -139,6 +135,13 @@ namespace Rusoom.Infrastructure.Data
                 .Property(privacyPolicy => privacyPolicy.ContentHash)
                 .HasMaxLength(64);
 
+            modelBuilder.Entity<PrivacyPolicy>()
+                .ToTable(
+                table => table.HasCheckConstraint(
+                    "CK_PrivacyPolicy_ContentHashLength",
+                    "LEN([ContentHash]) = 64"
+                    ));
+
             // ParentPolicyAcceptance
             modelBuilder.Entity<ParentPolicyAcceptance>()
                 .HasOne<Parent>()
@@ -147,14 +150,67 @@ namespace Rusoom.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<ParentPolicyAcceptance>()
-           .HasOne<PrivacyPolicy>()
-           .WithMany()
-           .HasForeignKey(parentPolicyAcceptance => parentPolicyAcceptance.PrivacyPolicyId)
-           .OnDelete(DeleteBehavior.NoAction);
+                .HasOne<PrivacyPolicy>()
+                .WithMany()
+                .HasForeignKey(parentPolicyAcceptance => parentPolicyAcceptance.PrivacyPolicyId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<ParentPolicyAcceptance>()
-           .HasIndex(parentPolicyAcceptance => new { parentPolicyAcceptance.ParentId, parentPolicyAcceptance.PrivacyPolicyId })
-           .IsUnique();
+                .HasIndex(parentPolicyAcceptance => new { parentPolicyAcceptance.ParentId, parentPolicyAcceptance.PrivacyPolicyId })
+                .IsUnique();
+
+            // RefreshToken
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne<Parent>()
+                .WithMany()
+                .HasForeignKey(refreshToken => refreshToken.ParentId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<RefreshToken>()
+              .HasOne<RefreshToken>()
+              .WithOne()
+              .HasForeignKey<RefreshToken>(refreshToken => refreshToken.ReplacedById)
+              .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(refreshToken => refreshToken.TokenHash)
+                .IsUnique();
+
+            modelBuilder.Entity<RefreshToken>()
+                .Property(refreshToken => refreshToken.TokenHash)
+                .HasMaxLength(64);
+
+            modelBuilder.Entity<RefreshToken>()
+                .HasIndex(refreshToken => refreshToken.FamilyId);
+
+            modelBuilder.Entity<RefreshToken>()
+                .Property(refreshToken => refreshToken.DeviceLabel)
+                .HasMaxLength(100);
+
+            modelBuilder.Entity<RefreshToken>()
+                .ToTable(table =>
+                {
+                    table.HasCheckConstraint(
+                        "CK_RefreshToken_ExpiresAfterCreated",
+                        "[ExpiresAtUtc] > [CreatedAtUtc]"
+                        );
+
+                    table.HasCheckConstraint(
+                        "CK_RefreshToken_RevokedNotBeforeCreated",
+                        "[RevokedAtUtc] IS NULL OR [RevokedAtUtc] >= [CreatedAtUtc]"
+                        );
+
+                    table.HasCheckConstraint(
+                        "CK_RefreshToken_NotReplacedBySelf",
+                        "[ReplacedById] IS NULL OR [ReplacedById] <> [RefreshTokenId]"
+                        );
+
+                    table.HasCheckConstraint(
+                        "CK_RefreshToken_TokenHashLength",
+                        "LEN([TokenHash]) = 64"
+                        );
+                });
+
         }
     }
 
