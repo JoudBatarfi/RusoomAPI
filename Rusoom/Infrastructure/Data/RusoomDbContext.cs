@@ -15,6 +15,7 @@ namespace Rusoom.Infrastructure.Data
         public DbSet<Child> Children => Set<Child>();
         public DbSet<ChildAccess> ChildAccesses => Set<ChildAccess>();
         public DbSet<PrivacyPolicy> PrivacyPolicies => Set<PrivacyPolicy>();
+        public DbSet<PrivacyPolicyTranslation> PrivacyPolicyTranslations => Set<PrivacyPolicyTranslation>();
         public DbSet<ParentPolicyAcceptance> ParentPolicyAcceptances => Set<ParentPolicyAcceptance>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
@@ -123,24 +124,35 @@ namespace Rusoom.Infrastructure.Data
                 .IsUnique()
                 .HasFilter("[IsCurrent] = 1");
 
-            modelBuilder.Entity<PrivacyPolicy>()
-                .Property(privacyPolicy => privacyPolicy.UrlEN)
-                .HasMaxLength(2048);
+            // PrivacyPolicyTranslation
+            modelBuilder.Entity<PrivacyPolicyTranslation>()
+                .HasOne<PrivacyPolicy>()
+                .WithMany()
+                .HasForeignKey(privacyPolicyTranslation => privacyPolicyTranslation.PrivacyPolicyId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<PrivacyPolicy>()
-                .Property(privacyPolicy => privacyPolicy.UrlAR)
-                .HasMaxLength(2048);
+            modelBuilder.Entity<PrivacyPolicyTranslation>()
+               .Property(privacyPolicyTranslation => privacyPolicyTranslation.Url)
+               .HasMaxLength(2048);
 
-            modelBuilder.Entity<PrivacyPolicy>()
-                .Property(privacyPolicy => privacyPolicy.ContentHash)
-                .HasMaxLength(64);
+            modelBuilder.Entity<PrivacyPolicyTranslation>()
+           .Property(privacyPolicyTranslation => privacyPolicyTranslation.ContentHash)
+           .HasMaxLength(64);
 
-            modelBuilder.Entity<PrivacyPolicy>()
+            modelBuilder.Entity<PrivacyPolicyTranslation>()
                 .ToTable(
                 table => table.HasCheckConstraint(
-                    "CK_PrivacyPolicy_ContentHashLength",
+                    "CK_PrivacyPolicyTranslation_ContentHashLength",
                     "LEN([ContentHash]) = 64"
                     ));
+
+            modelBuilder.Entity<PrivacyPolicyTranslation>()
+                .HasIndex(privacyPolicyTranslation => new { privacyPolicyTranslation.PrivacyPolicyId, privacyPolicyTranslation.Locale })
+                .IsUnique();
+
+            modelBuilder.Entity<PrivacyPolicyTranslation>()
+                .Property(privacyPolicyTranslation => privacyPolicyTranslation.Locale)
+                .HasMaxLength(64);
 
             // ParentPolicyAcceptance
             modelBuilder.Entity<ParentPolicyAcceptance>()
@@ -158,6 +170,10 @@ namespace Rusoom.Infrastructure.Data
             modelBuilder.Entity<ParentPolicyAcceptance>()
                 .HasIndex(parentPolicyAcceptance => new { parentPolicyAcceptance.ParentId, parentPolicyAcceptance.PrivacyPolicyId })
                 .IsUnique();
+
+            modelBuilder.Entity<ParentPolicyAcceptance>()
+                .Property(parentPolicyAcceptance => parentPolicyAcceptance.Locale)
+                .HasMaxLength(64);
 
             // RefreshToken
             modelBuilder.Entity<RefreshToken>()

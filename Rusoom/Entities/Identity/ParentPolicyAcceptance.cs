@@ -6,5 +6,6 @@ namespace Rusoom.Entities.Identity
         public Guid ParentId { get; set; }
         public Guid PrivacyPolicyId { get; set; }
         public DateTimeOffset AcceptedAtUtc { get; set; }
+        public string Locale { get; set; } = string.Empty;
     }
 }
