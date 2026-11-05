@@ -132,10 +132,6 @@ namespace Rusoom.Infrastructure.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PrivacyPolicyTranslation>()
-               .Property(privacyPolicyTranslation => privacyPolicyTranslation.Url)
-               .HasMaxLength(2048);
-
-            modelBuilder.Entity<PrivacyPolicyTranslation>()
            .Property(privacyPolicyTranslation => privacyPolicyTranslation.ContentHash)
            .HasMaxLength(64);
 
