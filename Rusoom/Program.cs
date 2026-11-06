@@ -2,6 +2,8 @@ using Rusoom.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Asp.Versioning;
 using Rusoom.Controllers;
+using Rusoom.Services.PrivacyPolicy;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -64,6 +66,8 @@ builder.Services.AddApiVersioning(options =>
     options.SubstituteApiVersionInUrl = true;
 })
 .AddMvc().AddOpenApi();
+
+builder.Services.AddScoped<IPrivacyPolicyService, PrivacyPolicyService>();
 
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks();
